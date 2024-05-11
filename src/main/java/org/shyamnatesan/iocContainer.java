@@ -5,9 +5,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.annotation.Annotation;
-import java.lang.annotation.ElementType;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
+import java.lang.reflect.Parameter;
 import java.util.*;
 
 public class iocContainer {
@@ -45,13 +46,12 @@ public class iocContainer {
 
     private void initializeBeans() {
         for(String className : this.allClasses) {
-            System.out.println("class name is " + className);
             try {
                Class<?> loadedClass = Class.forName(className);
+                System.out.println("class name is " + loadedClass.getName());
                 Annotation annotation = loadedClass.getAnnotation(Bun.class);
                 if (annotation != null) {
-                    Object instance = loadedClass.getDeclaredConstructor().newInstance();
-                    this.allInstances.put(loadedClass, instance);
+                    resolveDependencies(loadedClass);
                 }
 
             } catch (ClassNotFoundException | InvocationTargetException | InstantiationException |
@@ -59,6 +59,49 @@ public class iocContainer {
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    private void resolveDependencies(Class<?> loadedClass) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        System.out.println("resolving dependencies for " + loadedClass.getName());
+        Constructor[] constructors = loadedClass.getConstructors();
+        int i = 0;
+        for (Constructor c : constructors) {
+            Annotation an = c.getAnnotation(Dependency.class);
+            if (an != null) {
+                break;
+            }
+            i++;
+        }
+        if(i == constructors.length) {
+            // no dependencies, since no Annotation @Dep was found in the constructors
+            System.out.println("No dependency for " + loadedClass.getName() + " so resolved");
+            this.allInstances.put(loadedClass, loadedClass.getDeclaredConstructor().newInstance());
+            return ;
+        }
+
+        // Resolve dependencies and instantiate them
+        List<Object> resolvedDependencies = new ArrayList<>();
+        System.out.println("dependencies are ");
+        for (Parameter p : constructors[i].getParameters()) {
+            Class<?> dependencyType = p.getType();
+            System.out.println(dependencyType);
+            if (!this.allInstances.containsKey(dependencyType)) {
+                System.out.println("this dependency is not instantiated yet. so lets do that");
+                resolveDependencies(p.getType());
+            }
+            Object dependencyInstance = this.allInstances.get(dependencyType);
+            resolvedDependencies.add(dependencyInstance);
+        }
+
+        Object[] constructorArgs = resolvedDependencies.toArray(new Object[resolvedDependencies.size()]);
+        Object targetInstance = constructors[i].newInstance(constructorArgs);
+
+        // Store the instance of the target class in the IOC container
+        this.allInstances.put(loadedClass, targetInstance);
+
+        System.out.println("Dependencies resolved for " + loadedClass.getName());
+
+        System.out.println("dependencies listed above");
     }
 
     public Object getClassInstance(Class<?> classObj) {
