@@ -11,12 +11,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Parameter;
 import java.util.*;
 
-public class iocContainer {
+public class IOCContainer {
     private static final String packageName = "org.shyamnatesan";
     private final Set<String> allClasses;
     private final Map<Class<?>, Object> allInstances;
 
-    public iocContainer() {
+    public IOCContainer() {
         try {
             allClasses = new HashSet<>();
             allInstances = new HashMap<>();

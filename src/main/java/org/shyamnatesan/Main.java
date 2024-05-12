@@ -3,7 +3,7 @@ package org.shyamnatesan;
 
 public class Main {
     public static void main(String[] args) {
-        iocContainer ioc = new iocContainer();
+        IOCContainer ioc = new IOCContainer();
         FirstClass firstClass = (FirstClass) ioc.getClassInstance(FirstClass.class);
         firstClass.FirstDummy();
 
