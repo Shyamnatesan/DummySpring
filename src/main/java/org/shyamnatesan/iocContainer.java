@@ -50,7 +50,7 @@ public class iocContainer {
                Class<?> loadedClass = Class.forName(className);
                 System.out.println("class name is " + loadedClass.getName());
                 Annotation annotation = loadedClass.getAnnotation(Bun.class);
-                if (annotation != null) {
+                if (annotation != null && !this.allInstances.containsKey(loadedClass)) {
                     resolveDependencies(loadedClass);
                 }
 
