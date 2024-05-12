@@ -37,7 +37,7 @@ public class IOCContainer {
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
         String line = "";
         while ((line = bufferedReader.readLine()) != null) {
-            if (!line.endsWith("Main.class") && !line.endsWith("iocContainer.class") && !line.endsWith("Bun.class")) {
+            if (!line.endsWith("Main.class") && !line.endsWith("iocContainer.class") && !line.endsWith("Bun.class") && !line.endsWith("Dependency.class")) {
                 String className = packageName + "." + line.substring(0, line.length() - 6);
                 this.allClasses.add(className);
             }
